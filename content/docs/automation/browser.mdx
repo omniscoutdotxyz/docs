@@ -68,11 +68,31 @@ By default, the **first** navigation in a session opens a **new tab**; later nav
 | Keys | `browser key Enter` | Combos like `cmd+s`, `ctrl+c` |
 | Hover | `browser hover '@e7'` | Or `--coord x y` |
 | Checkbox or switch | `browser check '@e8'` / `browser uncheck '@e8'` | Sets the requested state in Playwright and CDP sessions |
-| Upload | `browser upload '@e9' file.pdf` | Attaches files to `<input type=file>` |
+| Upload | `browser upload '@e9' file.pdf` | Attaches a file to a page’s upload field in managed or connected browser sessions |
 | Scroll | `browser scroll down` | Page or element, with `--amount` |
 | Check state | `browser is '@e3' visible` | Visibility, enabled, checked, … |
 
 `fill` vs `type` vs `paste`: `fill` clears first (forms), `type` appends like a human (chats, editors), `paste` drops text at the cursor (large blobs).
+
+These actions also work when the connected browser extension is controlling an
+already open tab. Use `select` for a native dropdown; custom dropdowns can be
+opened with `click` and completed with the visible option's ref.
+The extension also supports page property reads (`get`), element state checks
+(`is`), and coordinate based pointer movement and scrolling (`browser mouse`).
+Start network or console capture before the actions you want to inspect; then use
+`network list`/`network tail` or `console list`/`console tail` to read the logs.
+For native checkboxes and radio buttons, `check` and `uncheck` set the requested
+state directly. Custom switches remain available through normal click actions.
+`browser download '@eN'` clicks the selected download control and saves the file
+to OmniScout's download folder; pass `--out` to choose a destination.
+Browser clipboard commands read or write text and supported clipboard items.
+Chrome may ask you to grant the extension clipboard access when you reload it.
+You can preview a page in print mode or emulate color and motion preferences in
+either managed or connected browser sessions. For example, run
+`omniscout browser emulate-media --color-scheme dark --reduced-motion reduce`;
+use `reset` for an option to restore that preference to the browser default.
+Frame elements can be targeted with `frame=<iframe CSS> >> <element CSS>`, for
+example `frame=iframe[name=checkout] >> input[name=email]`.
 
 ## Reading the page
 
@@ -89,23 +109,34 @@ Never `sleep` blindly — wait for the condition you actually need:
 
 ```bash
 omniscout browser wait text "Order confirmed"
-omniscout browser wait selector "#results"
+omniscout browser wait selector "#results" --state visible
+omniscout browser wait selector "#loading" --state hidden
+omniscout browser wait selector "#dialog" --state detached
 omniscout browser wait networkidle
 omniscout browser wait url "*checkout*"
 omniscout browser wait --ms 2000 --timeout-ms 30000
 ```
 
-`wait` also supports `--ref`, `--url` (match on current URL), and `--idle`.
+Selector waits accept CSS selectors or `@eN` refs. Use `--state attached`,
+`--state detached`, `--state visible` (the default), or `--state hidden` to wait
+for the condition you need. `wait` also supports `--url` (match on current
+URL), `--idle`, and a fixed delay with `--ms`.
 
 ## Tabs
 
 ```bash
+omniscout browser tab list --session existing
+omniscout browser tab switch 42 --session existing
 omniscout browser navigate https://a.com --session multi
 omniscout browser navigate https://b.com --new-tab --session multi
 omniscout browser tab list --session multi
 omniscout browser tab switch 0 --session multi
 omniscout browser tab close 1 --session multi
 ```
+
+With the browser extension connected, `tab list` can show your open browser
+tabs before you navigate. Switch to a tab ID to let OmniScout use that tab in
+the selected session.
 
 ## Network & console capture
 
