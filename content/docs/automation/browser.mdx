@@ -79,8 +79,10 @@ already open tab. Use `select` for a native dropdown; custom dropdowns can be
 opened with `click` and completed with the visible option's ref.
 The extension also supports page property reads (`get`), element state checks
 (`is`), and coordinate based pointer movement and scrolling (`browser mouse`).
-Start network or console capture before the actions you want to inspect; then use
-`network list`/`network tail` or `console list`/`console tail` to read the logs.
+OmniScout captures network requests and console messages as soon as it attaches
+to a page. Use `network list`/`network tail` or `console list`/`console tail` to
+read them. Run `network start` or `console start` to clear the current log and
+begin a fresh capture; use `stop` to pause capture.
 For native checkboxes and radio buttons, `check` and `uncheck` set the requested
 state directly. Custom switches remain available through normal click actions.
 `browser download '@eN'` clicks the selected download control and saves the file
