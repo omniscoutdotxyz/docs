@@ -41,6 +41,10 @@ These are the fastest way to see what an agent actually did — `trace` for fore
 
 Use **sessions** to isolate parallel workflows; use **profiles** to separate identities (work vs personal) or keep logins across restarts.
 
+Sessions using the same profile share its sign-in state but start on separate
+active tabs. A tab active in another session cannot be closed from the current
+session. Close sibling sessions before changing the browser window's visibility.
+
 ### Sessions
 
 ```bash
