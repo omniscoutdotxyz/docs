@@ -85,6 +85,9 @@ For native checkboxes and radio buttons, `check` and `uncheck` set the requested
 state directly. Custom switches remain available through normal click actions.
 `browser download '@eN'` clicks the selected download control and saves the file
 to OmniScout's download folder; pass `--out` to choose a destination.
+For upload controls that open a file picker, run
+`omniscout browser upload '@eN' ./report.pdf --open-chooser`. Direct uploads to
+a file field use `omniscout browser upload 'input[type=file]' ./report.pdf`.
 Browser clipboard commands read or write text and supported clipboard items.
 Chrome may ask you to grant the extension clipboard access when you reload it.
 You can preview a page in print mode or emulate color and motion preferences in
