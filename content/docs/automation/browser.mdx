@@ -62,6 +62,7 @@ By default, the **first** navigation in a session opens a **new tab**; later nav
 |---|---|---|
 | Click | `browser click '@e3'` | `--button`, `--clicks`, `--mod`, or `--coord x y` for vision agents |
 | Fill (replace) | `browser fill '@e5' "text"` | Replaces existing content |
+| Select text | `browser select-text '@e5' "text"` | Selects a match in an editable field; add `--prefix` or `--suffix` when text repeats |
 | Type (append) | `browser type '@e5' "text"` | Appends; `--delay-ms` between keystrokes |
 | Paste | `browser paste '@e5' "text"` | Inserts at cursor without clearing |
 | Select | `browser select '@e5' "option"` | Native `<select>` elements |
