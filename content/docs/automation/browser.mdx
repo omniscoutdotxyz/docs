@@ -56,6 +56,11 @@ omniscout browser get title                     # page title
 
 By default, the **first** navigation in a session opens a **new tab**; later navigations **reuse that tab** so multi-step flows (checkout, forms) stay on one page. Use `--reuse-tab` on the first open, or `omniscout settings set open_new_tab false`, to change that default.
 
+With the MCP server, use `browser_tab_list` to inspect open tabs, then
+`browser_tab_switch` with a tab ID or exact URL to bind the session to one.
+`browser_tab_close` closes a chosen tab or the active tab. `browser_back`,
+`browser_forward`, and `browser_reload` handle page history and refresh.
+
 ## Clicking, typing, selecting
 
 | Action | Command | Notes |
