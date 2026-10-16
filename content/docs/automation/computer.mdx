@@ -66,6 +66,13 @@ omniscout computer ui drag '@e2' '@e7'
 omniscout computer ui is '@e4' button
 ```
 
+When your agent connects through the OmniScout MCP server, use `computer_observe`
+to get the desktop view and current refs. Then use `computer_ui_click`,
+`computer_ui_drag`, `computer_ui_set_value`, or `computer_ui_perform_action`
+for accessible controls. Coordinate-based pointer tools are available when a
+control has no usable accessibility ref. The MCP tools also cover paste,
+screenshots, waits, and window management.
+
 ## Full example
 
 ```bash
