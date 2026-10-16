@@ -132,6 +132,7 @@ URL), `--idle`, and a fixed delay with `--ms`.
 ```bash
 omniscout browser tab list --session existing
 omniscout browser tab switch 42 --session existing
+omniscout browser tab switch --url https://example.com --session existing
 omniscout browser navigate https://a.com --session multi
 omniscout browser navigate https://b.com --new-tab --session multi
 omniscout browser tab list --session multi
@@ -140,8 +141,8 @@ omniscout browser tab close 1 --session multi
 ```
 
 With the browser extension connected, `tab list` can show your open browser
-tabs before you navigate. Switch to a tab ID to let OmniScout use that tab in
-the selected session.
+tabs before you navigate. Switch by tab ID, or use `--url` to select a tab with
+that exact URL. If several tabs match the URL, use the tab ID instead.
 
 ## Network & console capture
 
