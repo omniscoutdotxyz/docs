@@ -96,3 +96,7 @@ omniscout computer screenshot --out /tmp/notes.png --session notes
 On OmniScout Cloud, the same primitives run on a remote Sprite via `computer.*` actions on a unified session — see [Endpoints](/docs/endpoints#computer-sessions).
 
 See `omniscout computer --help` (and `omniscout computer ui --help`) for all options.
+
+On Linux and Windows, use `--pixels` to choose an approximate scroll distance.
+The desktop wheel uses fixed steps, so the resulting distance can vary by app.
+On macOS and Linux sessions bound to a window, use `--amount` instead.
