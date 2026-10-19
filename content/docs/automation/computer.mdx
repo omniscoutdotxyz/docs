@@ -74,8 +74,11 @@ When your agent connects through the OmniScout MCP server, use `computer_observe
 to get the desktop view and current refs. Then use `computer_ui_click`,
 `computer_ui_drag`, `computer_ui_set_value`, or `computer_ui_perform_action`
 for accessible controls. Coordinate-based pointer tools are available when a
-control has no usable accessibility ref. The MCP tools also cover paste,
-screenshots, waits, and window management.
+control has no usable accessibility ref. In a bound Linux session, use
+coordinates from that window's screenshot; pointer actions go to the bound
+window without moving the desktop pointer. Some apps ignore background input.
+Windows and macOS use desktop screenshot coordinates. The MCP tools also cover
+paste, screenshots, waits, and window management.
 
 ## Full example
 
