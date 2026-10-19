@@ -22,12 +22,14 @@ omniscout computer paste $'First line\nSecond line' --session notes
 omniscout computer paste '<b>Meeting notes</b>' --format html --session notes
 omniscout computer paste '# Meeting notes' --format md --session notes
 omniscout computer key cmd+s
+omniscout computer key space --duration-ms 500
 omniscout computer key KP_0
 omniscout computer wait 300                            # milliseconds
 ```
 
 - `navigate` opens anything the OS can open: app paths/names, files, directories, URLs.
 - `type` types into the currently focused window; `key` sends combos (`cmd+s`, `ctrl+c`, `cmd+space`, `F13`, `KP_0`, …).
+- Pass `--duration-ms` to hold a key or combo before release.
 - `paste` inserts plain text, including multiple lines. On macOS, `--format html` pastes HTML and `--format md` converts Markdown to rich HTML when the app supports it. The previous text clipboard content is restored. Linux and Windows currently support plain text only.
 - `ui click` accepts `--click-count 2` for a double-click or `--click-count 3` for a triple-click.
 - `wait` sleeps a fixed number of milliseconds — prefer it only for animations; there are no DOM conditions on the desktop.
