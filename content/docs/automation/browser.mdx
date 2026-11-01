@@ -163,8 +163,10 @@ You can preview a page in print mode or emulate color and motion preferences in
 either managed or connected browser sessions. For example, run
 `omniscout browser emulate-media --color-scheme dark --reduced-motion reduce`;
 use `reset` for an option to restore that preference to the browser default.
-Frame elements can be targeted with `frame=<iframe CSS> >> <element CSS>`, for
-example `frame=iframe[name=checkout] >> input[name=email]`.
+The page snapshot includes controls inside embedded frames. Use their `@eN` refs
+with browser actions as you would for controls in the main page. You can also
+target a frame with `frame=<iframe CSS> >> <element CSS>`, for example
+`frame=iframe[name=checkout] >> input[name=email]`.
 
 ## Reading the page
 
