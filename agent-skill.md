@@ -266,7 +266,13 @@ omniscout snapshot [--refs-only] [--session NAME]
 omniscout context    # workflow state: session, search set, snapshot generation
 omniscout reset      # clear workflow state (does not close browser sessions)
 omniscout workflow export [--session NAME] [--since SECONDS] [--from-context]
+omniscout workflow mark-deliverable <path-or-url> [--summary TEXT]
+omniscout workflow mark-handoff "what is complete and what needs attention next"
 ```
+
+Marks are saved in workflow context and shown by `omniscout context`. Always
+share the deliverable path or URL with the user; a handoff mark records the
+summary for another agent to read.
 
 Deterministic rules:
 
@@ -293,7 +299,7 @@ search; use `omniscout browser …` for the full verb set.
 | `pdf` | `--out`, `--paper`, `--landscape` | `{path, size_bytes}` | Playwright backend only. |
 | `eval` | code | `{type, value}` | Use compact `JSON.stringify`; wrap in IIFE for fresh scope. |
 | `wait` | `--ref` / `--url` / `--idle` / `--ms` | `{reason}` | |
-| `upload` | selector, files… | `{file_count, files}` | Playwright only. |
+| `upload` | selector, files… | `{file_count, files}` | Playwright or extension; target must be a file input. |
 | `tab list/close/switch` | tab_id | tab metadata | |
 | `network start/stop/list/detail` | `--filter` | request/response entries | |
 | `login` | url, `--profile`, `--success-pattern` | `{logged_in, final_url}` | Headful + blocks; use `login --done` to resume. |
@@ -340,13 +346,14 @@ Each `--session NAME` isolates tabs, refs, and network logs. Restart-safe: the
 daemon persists last URL per session and re-navigates after restart (bump in
 `snapshot_generation` signals re-snapshot).
 
-Same-session commands are serialised; different sessions run in parallel.
+Stateful browser and desktop actions in one session run one at a time; different
+sessions can run in parallel.
 
 ### Element addressing — prefer `@eN` refs
 
 `snapshot` mints stable `@eN` refs from the accessibility tree. Compare
 `snapshot_generation` on every response; if it changed, re-snapshot before
-using cached refs. Stale refs return `error_kind: no_such_ref`.
+using cached refs. Stale refs return `error_kind: no_such_ref` or `stale_ref`, depending on the backend. If a snapshot returns `page_changed`, wait for the page to settle and retry it.
 
 ### Login flow
 
@@ -375,7 +382,7 @@ omniscout browser captcha --solver 2captcha       # opt-in; needs TWOCAPTCHA_API
 
 - Sites checking `event.isTrusted` reject synthetic click/fill
 - Cross-origin iframes: navigate to iframe URL directly
-- `pdf` and `upload` require Playwright backend
+- `pdf` requires the Playwright backend
 
 ## 11. Profiles
 

@@ -8,7 +8,7 @@ icon: Download
 
 - **Python 3.11+** — check with `python --version`
 - **A Chromium-based browser** — Chrome, Brave, Edge, Vivaldi, Opera, Arc, or Chromium
-- **macOS or Linux** — desktop automation (`computer`) currently supports macOS only
+- **macOS, Linux, or Windows** — desktop automation availability depends on your operating system and accessibility services
 
 ## Install
 
@@ -39,13 +39,15 @@ omniscout settings browsers
 omniscout install
 ```
 
-To drive your existing browser instead, point OmniScout at it and load the extension:
+To set your default browser and connect its extension, run setup:
 
 ```bash
 omniscout setup --browser dia
 ```
 
-This downloads the extension and opens the browser's extensions page. Choose `Load unpacked`, select the printed folder, and confirm the popup says connected. See [How it works](/docs/overview) for how the options differ.
+Setup opens the browser's extensions page and remote-debugging page, and starts your operating system's Accessibility permission flow. On macOS, allow Accessibility for the app running OmniScout. On Windows and Linux, OmniScout opens Accessibility settings when the desktop provides them; these systems may not show an app-specific consent popup. Linux desktop control also needs an active accessibility service. In the browser, turn on **Allow remote debugging for this browser instance** and click **Allow** when asked.
+
+If the extension was not loaded automatically, choose **Load unpacked** on the extensions page and select the folder printed by setup. Confirm that the extension says it is connected. You choose whether to grant each permission. See [How it works](/docs/overview) for how the browser options differ.
 
 ## Get ready
 
@@ -73,6 +75,9 @@ If an AI agent will drive OmniScout, install the skill files so Claude Code, Cur
 ```bash
 omniscout install --skill
 ```
+
+To install the optional Probe Zero Mini model during setup, add
+`--probe-0-mini` to `omniscout install`. It downloads about 700 MB.
 
 See [Using with AI agents](/docs/agents) for the full agent setup.
 

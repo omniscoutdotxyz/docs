@@ -8,11 +8,11 @@ icon: Globe
 
 ```bash
 omniscout browser navigate https://example.com   # 1. open a page
-omniscout browser snapshot --refs-only           # 2. list @eN element refs
+omniscout browser inspect --refs-only             # 2. get @eN refs and screenshot together
 omniscout browser click '@e3'                    # 3. act on a ref
 omniscout browser check '@e4'                     # set a checkbox or switch on
 omniscout browser uncheck '@e5'                   # set it off
-omniscout browser screenshot --out /tmp/out.png  # 4. capture state
+omniscout browser screenshot --out /tmp/out.png  # capture a later view
 ```
 
 ## Where pages open
@@ -28,12 +28,23 @@ omniscout settings set browser-automation headless   # managed window (default)
 
 Append `--headful` or `--headless` to any single command to override the default just once.
 
+Use `browser inspect` when you need the current accessibility refs and a visual
+view at the same point in your workflow. Add `--screenshot-out /path/page.png`
+to save the image, or `--base64` when your agent needs the image in JSON.
+
 ## The `@eN` ref model
 
 `snapshot` lists the elements you can act on (`@e1`, `@e2`, …). Every interaction targets a ref. Two rules:
 
-1. **Re-snapshot after every navigation or major page change** — refs go stale when the page changes.
+1. **Re-snapshot after navigation or a stale-ref error** — refs expire when the page changes. If the page changes during capture, wait for it to settle and retry the snapshot.
 2. **Prefer `--refs-only`** for a flat actionable list; drop it for the full tree when you need hierarchy.
+
+If navigation times out, the error response includes the snapshot generation and
+URL context. If it includes a landed URL with `navigation_complete: false`, the
+document is available even though the requested load event did not finish. Take
+a fresh snapshot and continue in the same tab before deciding whether to retry.
+With a connected extension, the URL may be the last known one; inspect the
+current session before acting on it.
 
 ```bash
 omniscout browser snapshot --refs-only
@@ -54,15 +65,33 @@ omniscout browser get title                     # page title
 
 `navigate` accepts `--profile` (persistent login context), `--session` (tab group), `--new-tab`, `--headful/--headless`, `--auto-captcha`, and `--wait-until`. See [Daemon & sessions](/docs/automation/sessions) for profiles vs sessions.
 
-By default, the **first** navigation in a session opens a **new tab**; later navigations **reuse that tab** so multi-step flows (checkout, forms) stay on one page. Use `--reuse-tab` on the first open, or `omniscout settings set open_new_tab false`, to change that default.
+The first navigation opens a target separate from the page you were using: a new tab when you use the connected browser extension, or a separate window when OmniScout controls the desktop browser on macOS. Later navigations in the same session reuse that target. Isolated browser sessions open in their own window.
+
+When Dia is already open, OmniScout opens a new tab in that app and leaves your current page alone. It does not start a second Dia process for browser automation.
 
 With the MCP server, use `browser_tab_list` to inspect open tabs, then
 `browser_tab_switch` with a tab ID or exact URL to bind the session to one.
+Use `browser_tab_new` to open another tab in that session, or
+`browser_attach_cdp` to connect to an already-running Chromium browser.
 `browser_tab_close` closes a chosen tab or the active tab. `browser_back`,
 `browser_forward`, and `browser_reload` handle page history and refresh.
 MCP also has dedicated tools for native dropdowns, checkboxes, paste, drag and
 drop, local file uploads and downloads, and pointer movement when a page cannot
 be operated through element refs.
+Use `browser_screenshot_image` when an agent needs the screenshot returned as
+an image it can inspect directly.
+Use `browser_find_image` to locate a visual target when it has no accessible
+label. Pass a local `template` path when the image is on the OmniScout machine,
+or `image_base64` when the agent only has image data. A successful match returns
+viewport coordinates that can be used with `browser_click`.
+MCP's `browser_wait` can wait for a selector to attach, detach, appear, or hide
+using `selector_state`, matching `omniscout browser wait selector`.
+Use `browser_find` to locate page text or a regular expression, and
+`browser_fill_form` to fill several named fields in one call.
+For page diagnosis, `browser_network` captures requests and
+`browser_console` captures messages and errors. `browser_clipboard` reads or
+writes tab clipboard data. `browser_webmcp` lists or calls tools offered by a
+page, while `browser_page_assets` lists or bundles its assets.
 
 ## Clicking, typing, selecting
 
@@ -72,16 +101,41 @@ be operated through element refs.
 | Fill (replace) | `browser fill '@e5' "text"` | Replaces existing content |
 | Select text | `browser select-text '@e5' "text"` | Selects a match in an editable field; add `--prefix` or `--suffix` when text repeats |
 | Type (append) | `browser type '@e5' "text"` | Appends; `--delay-ms` between keystrokes |
-| Paste | `browser paste '@e5' "text"` | Inserts at cursor without clearing |
-| Select | `browser select '@e5' "option"` | Native `<select>` elements |
+| Paste | `browser paste '@e5' "text"` | Inserts at cursor without clearing; use `--format html` to keep rich formatting in editable areas when supported. Ordinary fields receive the HTML text content; `md` inserts Markdown source as text. |
+| Select | `browser select '@e5' "option"` | Native `<select>` elements. In native computer mode, use an accessible dropdown ref and its visible option label; one option at a time. |
 | Keys | `browser key Enter` | Combos like `cmd+s`, `ctrl+c` |
 | Hover | `browser hover '@e7'` | Or `--coord x y` |
-| Checkbox or switch | `browser check '@e8'` / `browser uncheck '@e8'` | Sets the requested state in Playwright and CDP sessions |
+| Checkbox or switch | `browser check '@e8'` / `browser uncheck '@e8'` | Sets and verifies the requested state in browser sessions; Computer Use needs an accessible control with a readable state |
 | Upload | `browser upload '@e9' file.pdf` | Attaches a file to a page’s upload field in managed or connected browser sessions |
 | Scroll | `browser scroll down` | Page or element, with `--amount` |
 | Check state | `browser is '@e3' visible` | Visibility, enabled, checked, … |
 
 `fill` vs `type` vs `paste`: `fill` clears first (forms), `type` appends like a human (chats, editors), `paste` drops text at the cursor (large blobs).
+
+For MCP agents, `browser_action_batch` runs a short sequence in one call. Each
+step uses the same action fields as the matching browser tool; for example:
+
+```json
+[
+  {"type":"click","selector":"@e3"},
+  {"type":"fill","selector":"@e5","value":"hello"},
+  {"type":"select","selector":"@e8","value":"Pro"},
+  {"type":"press","combo":"Enter"}
+]
+```
+
+The batch supports navigation, click, fill, type, dropdown selection, key press,
+scroll, hover, wait, and screenshot steps. It stops at the first failed step and returns the completed results, the
+failed step's index, and the final page image. Set `include_screenshot` to
+`false` for text-only output. Use batches for actions that can safely run
+without checking the page between steps; use separate calls when a step may
+change what you need to inspect next.
+
+The same sequence is available from the CLI as `omniscout browser batch`:
+
+```bash
+omniscout browser batch '[{"type":"click","selector":"@e3"},{"type":"wait","text":"Saved"}]' --session work --no-screenshot
+```
 
 These actions also work when the connected browser extension is controlling an
 already open tab. Use `select` for a native dropdown; custom dropdowns can be
@@ -92,10 +146,14 @@ OmniScout captures network requests and console messages as soon as it attaches
 to a page. Use `network list`/`network tail` or `console list`/`console tail` to
 read them. Run `network start` or `console start` to clear the current log and
 begin a fresh capture; use `stop` to pause capture.
-For native checkboxes and radio buttons, `check` and `uncheck` set the requested
-state directly. Custom switches remain available through normal click actions.
+For native checkboxes, radio buttons, and switches, `check` and `uncheck` use
+the accessible state when the app exposes it. A selected radio button cannot be
+unchecked by itself. Custom switches without a readable state remain available
+through normal click actions.
 `browser download '@eN'` clicks the selected download control and saves the file
-to OmniScout's download folder; pass `--out` to choose a destination.
+to OmniScout's download folder. Repeated downloads with the same filename get
+numbered names so earlier files stay intact; pass `--out` to choose a path that
+can replace an existing file.
 For upload controls that open a file picker, run
 `omniscout browser upload '@eN' ./report.pdf --open-chooser`. Direct uploads to
 a file field use `omniscout browser upload 'input[type=file]' ./report.pdf`.
@@ -115,6 +173,14 @@ omniscout browser get text              # visible body text
 omniscout browser get html              # page HTML (truncated ~500KB)
 omniscout browser eval "document.title" # run JavaScript, return the value
 omniscout browser extract-visible       # visible text, optional --schema shaping
+```
+
+Pass a JSON schema when you want named fields such as email or pricing instead
+of the full text. The result includes common page facts and values written under
+matching labels:
+
+```bash
+omniscout browser extract-visible --schema-inline '{"type":"object","properties":{"email":{"type":"string"},"headquarters":{"type":"string"}}}'
 ```
 
 ## Waiting
@@ -178,6 +244,8 @@ For fuzzy targets, let OmniScout resolve them:
 omniscout browser observe "the search box"        # find candidate refs
 omniscout browser act "click the top story"       # resolve + act
 omniscout browser act "search box" --value "local-first agents"
+omniscout browser act --ref @e7 --action hover      # hover an observed ref
+omniscout browser act --ref @e8 --action select --value Pro  # select an option
 omniscout browser act "submit" --dry-run          # resolve without acting
 ```
 
@@ -194,9 +262,20 @@ omniscout browser screenshot --ref '#hero' --out /tmp/hero.png # element by CSS 
 omniscout browser screenshot --region 0,200,1280,800 --out /tmp/mid.png  # pixel rectangle
 omniscout browser screenshot --delay 2.5 --out /tmp/late.png  # wait for animations
 omniscout browser pdf --out /tmp/page.pdf --paper letter
-omniscout browser mouse move 400 300
-omniscout browser mouse scroll 400 300
+omniscout browser mouse move --coord 400 300 --steps 8
+omniscout browser mouse scroll --coord 400 300
 ```
+
+PDF export works in a headless Playwright session or a connected Chrome tab. If
+you need to keep a visible Playwright window open, start a separate headless
+session for the export.
+
+Element screenshots in Computer Use mode need a recent `computer observe` snapshot
+with visible bounds for the requested `@eN` ref. Computer Use captures the visible
+desktop, so full-page and stitched screenshots need a DOM browser session.
+
+Use `--steps` to move through intermediate pointer positions; the default is a
+single direct move.
 
 ## Login & CAPTCHA
 

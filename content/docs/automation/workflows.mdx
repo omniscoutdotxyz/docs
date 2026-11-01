@@ -30,6 +30,24 @@ omniscout reset              # reset it and start fresh
 omniscout workflow export    # export steps as JSON (share or persist a process)
 ```
 
+## Mark a deliverable or handoff
+
+Record an output file or URL in workflow context so an agent can include it in
+its final response. Add a handoff note when work is ready for someone else to
+continue:
+
+```bash
+omniscout workflow mark-deliverable ./reports/summary.md --summary "Research summary"
+omniscout workflow mark-handoff "Research is complete; review the summary and sources"
+omniscout context   # see recorded marks
+```
+
+Marks stay in workflow context until `omniscout reset` clears it. They record
+the handoff for OmniScout users and agents; the agent should still share the
+deliverable link or path with the user.
+
+MCP tools `mark_deliverable` and `mark_handoff` provide the same actions.
+
 `auto` routes a one-line request to the best command when you don't want to choose:
 
 ```bash

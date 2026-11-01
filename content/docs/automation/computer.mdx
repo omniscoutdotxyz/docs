@@ -7,7 +7,6 @@ icon: Monitor
 `omniscout computer` controls desktop apps, windows, the clipboard, and the screen on macOS, Windows, and Linux — the desktop counterpart to [Browser automation](/docs/automation/browser). Commands use the same JSON output and `--session` model.
 
 Run `omniscout computer doctor` to check whether desktop control is ready on your machine.
-
 Run `omniscout computer capabilities` to compare available desktop actions and
 the known limits of each supported platform. The MCP server exposes the same
 report as `computer_capabilities`.
@@ -25,14 +24,20 @@ omniscout computer key cmd+s
 omniscout computer key space --duration-ms 500
 omniscout computer key KP_0
 omniscout computer wait 300                            # milliseconds
+omniscout computer wait-for "Saved" --timeout-ms 10000 # accessible text appears
 ```
 
 - `navigate` opens anything the OS can open: app paths/names, files, directories, URLs.
-- `type` types into the currently focused window; `key` sends combos (`cmd+s`, `ctrl+c`, `cmd+space`, `F13`, `KP_0`, …).
+- `type` types into the session's target window; `key` sends combos (`cmd+s`, `ctrl+c`, `cmd+space`, `F13`, `KP_0`, …).
 - Pass `--duration-ms` to hold a key or combo before release.
 - `paste` inserts plain text, including multiple lines. On macOS, `--format html` pastes HTML and `--format md` converts Markdown to rich HTML when the app supports it. The previous text clipboard content is restored. Linux and Windows currently support plain text only.
 - `ui click` accepts `--click-count 2` for a double-click or `--click-count 3` for a triple-click.
+- Use `--button wheel` for the middle mouse button; OmniScout also accepts `middle` as an alias.
+- Mouse actions accept `--key cmd+shift` to hold modifier keys during a click, drag, move, or scroll. Clicks also accept `--duration-ms 500` to hold the mouse button. These options work on all three platforms.
+- Use `--button back` or `--button forward` for the browser navigation buttons. These are useful when a browser or app responds to mouse side buttons.
+- `window bind --id <ID>` keeps later observations and actions attached to a specific window. Linux can send keyboard input without activating it; Windows activates the selected window before input.
 - `wait` sleeps a fixed number of milliseconds — prefer it only for animations; there are no DOM conditions on the desktop.
+- `wait-for` polls the target window's accessibility information until text appears or disappears. It works when the app exposes its controls to accessibility; otherwise use a screenshot and a short fixed wait.
 
 ## Clipboard & screenshots
 
@@ -43,9 +48,23 @@ omniscout computer screenshot --out /tmp/desktop.png
 omniscout computer screenshot --base64  # include PNG data in JSON output
 omniscout computer observe --base64     # accessibility tree and screenshot together
 omniscout computer screenshot --region 100,100,800,600 --out /tmp/crop.png  # part of the screen
+omniscout computer screenshot --window-id 0x00123456 --out /tmp/window.png
+omniscout computer observe --window-id 0x00123456 --base64
 ```
 
+On macOS, Linux, and Windows, `--window-id` captures the selected window from the
+window list. The combined `observe` command also returns that window's
+accessibility view. On Windows, the screenshot shows the selected window's
+visible screen area, including anything that covers it. If window capture is
+unavailable on your system, use a full-screen or region screenshot.
+
 Use `computer paste` to insert text without replacing the clipboard. Use `clipboard set` and `clipboard get` when you want to move text between the desktop and your shell.
+
+When you omit `--out`, each screenshot gets its own file so a later capture
+does not replace an earlier one.
+
+Run `omniscout computer state` to list installed apps and open windows together.
+This is useful when you need to choose an app to launch or a window to inspect.
 
 ## Windows
 
@@ -60,17 +79,53 @@ omniscout computer window close "Notes"
 
 List windows first. Use a window ID to activate, resize, or close that exact window. The selected window receives later input in that session. Closing a window requires `--confirm`.
 
+Use `window bind --id` to keep later observations and actions attached to a
+specific window. On Linux, keyboard input can be sent without activating the
+window. On macOS, binding scopes accessibility observations and window actions;
+keyboard and mouse input activates the app. Windows input activates its selected
+window:
+
+```bash
+omniscout computer window list
+omniscout computer window bind --id 0x00123456 --session background
+omniscout computer type "Draft note" --session background
+```
+
+Some apps ignore input sent to an inactive window. If typing has no effect,
+activate the window first.
+
 ## UI element interaction
 
 For element-level control instead of blind typing, snapshot the page and act on `@eN` refs — the same model as browser automation:
 
 ```bash
 omniscout computer ui snapshot
+omniscout computer ui find "Save" --role button --match exact
 omniscout computer ui click '@e4'
 omniscout computer ui click '@e4' --click-count 2
+omniscout computer ui click '@e4' --key cmd+shift
+omniscout computer ui click '@e4' --duration-ms 500
+omniscout computer ui mouse_move 640 360 --duration-ms 300
 omniscout computer ui drag '@e2' '@e7'
+omniscout computer ui mouse-drag 10 20 300 250 --path '[[80,90],[160,40]]' --duration 600
+omniscout computer ui mouse_scroll --direction down --pixels 500
 omniscout computer ui is '@e4' button
 ```
+
+For coordinate drags, `--path` adds intermediate points between the start and
+end coordinates. This lets you trace a curve or move around an obstacle. Omit
+it for a straight drag.
+
+Coordinate mouse moves are immediate by default; use `--duration-ms` to move
+gradually to the target over the requested time.
+
+`ui find` refreshes the accessibility snapshot, then returns matching controls
+with current refs. It marks multiple matches as ambiguous, so choose a ref
+before clicking. Use `--include-hidden` to search controls that are currently
+hidden.
+
+Modifier clicks and held mouse buttons work on macOS and Linux. Windows does
+not support `--key` or `--duration-ms` for clicks.
 
 When your agent connects through the OmniScout MCP server, use `computer_observe`
 to get the desktop view and current refs. Then use `computer_ui_click`,
@@ -81,6 +136,31 @@ coordinates from that window's screenshot; pointer actions go to the bound
 window without moving the desktop pointer. Some apps ignore background input.
 Windows and macOS use desktop screenshot coordinates. The MCP tools also cover
 paste, screenshots, waits, and window management.
+Use `computer_observe_image` when the agent needs the screenshot as an image
+result it can inspect, together with the accessibility details.
+
+For app and window selection, use `computer_state`, `computer_app_list`,
+`computer_app_launch`, and `computer_window_list`. Bind a selected window with
+`computer_window_bind` when later observations and actions should stay attached
+to it. `computer_wait_for` can wait for accessible text to appear or disappear;
+`computer_paste` is useful for longer text or supported rich content.
+
+Use `computer_action_batch` when several desktop actions must run in a fixed
+order without another request using the same session between them. It accepts
+up to 50 typed actions, such as clicks, typing, key presses, waits, and
+screenshots. If an action fails, the result includes the completed actions and
+the index of the failed one. Drag actions accept a full path of `{x, y}` points,
+and scroll actions accept `scroll_x` and `scroll_y` deltas. Modifier keys can be
+held during mouse actions by adding a `keys` list. MCP batches include the
+updated screen image by default; set `include_screenshot=false` to omit it.
+
+The CLI accepts the same action list as JSON:
+
+```bash
+omniscout computer batch '[{"type":"click","x":10,"y":20},{"type":"type","text":"hello"}]' --session notes
+omniscout computer batch '[{"type":"click","x":10,"y":20}]' --screenshot-after --session notes
+omniscout computer batch '[{"type":"drag","path":[{"x":10,"y":20},{"x":100,"y":120}],"keys":["SHIFT"]},{"type":"scroll","x":200,"y":300,"scroll_y":300}]' --session notes
+```
 
 ## Full example
 
@@ -99,7 +179,8 @@ On OmniScout Cloud, the same primitives run on a remote Sprite via `computer.*` 
 
 See `omniscout computer --help` (and `omniscout computer ui --help`) for all options.
 
-On Linux and Windows, use `--pixels` to choose an approximate scroll distance.
-The desktop wheel uses fixed steps, so the resulting distance can vary by app.
-Linux supports pixel scrolling in bound windows; Windows requires `--x` and
-`--y`. On macOS, use `--pages` for a screen-sized scroll distance.
+Use `--pixels` to request an approximate scroll distance on any desktop
+platform. Linux and Windows translate this to desktop wheel steps, so the
+result can vary by app; Windows also requires `--x` and `--y`. macOS sends a
+pixel-sized wheel delta. Use `--pages` on macOS when you want a screen-sized
+scroll distance instead.

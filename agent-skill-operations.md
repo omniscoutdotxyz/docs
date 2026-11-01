@@ -37,11 +37,12 @@ or `$XDG_DATA_HOME/omniscout/daemon/` (Linux):
 | `{"running": false}` from `omniscout daemon status` | `omniscout daemon start` |
 | Daemon starts but immediately exits | `omniscout daemon logs --prev -n 200` to inspect the previous run; common cause is a port conflict — try `omniscout daemon start --port 0` to auto-pick. |
 | Action returns `error_kind: "backend_unavailable"` | Extension backend selected but extension isn't connected. Either install the extension (see `extension/README.md`) OR drop `args.backend = "extension"` so omniscout uses Playwright. |
-| Tab opens in the background | Use `omniscout open URL --headful` so the extension activates the tab. Default is still a new tab (`open_new_tab`). |
+| Page opens in a separate tab or window | Keep using the same `--session`; OmniScout reuses that automation target. On macOS native computer mode, actions stay bound to the separate browser window. |
 | `daemon status` shows `extension_connected: true` | New sessions automate **your** browser, not a separate managed window. |
-| Action returns `error_kind: "no_such_ref"` | The ref expired or the page changed. Re-run `snapshot` and use the new refs. |
+| Action returns `error_kind: "no_such_ref"` or `"stale_ref"` | The ref expired or the page changed. Re-run `snapshot` and use the new refs. |
+| Snapshot returns `error_kind: "page_changed"` | The page changed while it was being read. Wait for it to settle, then retry `snapshot`. |
 | Action returns `error_kind: "timeout"` | Page hasn't settled. Try `wait --idle` then retry; or bump `--timeout-ms`. |
-| Action returns `error_kind: "unsupported"` | Backend doesn't support that verb. `pdf` and `upload` require Playwright; switch backend. |
+| Action returns `error_kind: "unsupported"` | Backend doesn't support that verb. `pdf` requires Playwright; switch backend. |
 | `start` fails with "address already in use" | Another process is on `:7720`. Run `omniscout daemon stop && omniscout daemon start`. If still failing: `lsof -i :7720` and kill the conflicting PID, or specify a new port with `--port`. |
 
 ## Daily operations
@@ -74,7 +75,7 @@ omniscout daemon logs --prev -n 200  # the previous run's log (after a crash)
 | Symptom | Diagnosis | Fix |
 |---|---|---|
 | `omniscout browser snapshot` returns a huge tree on a complex page | Reduce noise by capturing only refs: `omniscout browser snapshot --refs-only`. |
-| `click @eN` returns `no_such_ref` | The ref expired (TTL 120s) or you re-navigated. Re-`snapshot`. |
+| `click @eN` returns `no_such_ref` or `stale_ref` | The ref expired (TTL 120s) or the page changed. Re-run `snapshot`. |
 | `fill` writes to the wrong element on SPAs | The role-based locator is ambiguous. Use the snapshot's `value` field to verify which `@e` you want; or fall back to a more specific CSS selector. |
 | Screenshot path lives in a temp dir you can't access | Pass `--out /path/you/control.png` explicitly. |
 | Screenshot only shows the visible viewport / cuts off below-the-fold content | Viewport capture is the default. Re-run with `--full-length` or `--full-page` for a top-to-bottom capture. |
