@@ -1,98 +1,30 @@
 ---
 title: 安装
-description: 安装 OmniScout、验证浏览器并启动 daemon。
+description: 使用 AI agent 设置 OmniScout。
 icon: Download
 ---
 
-## 系统要求
-
-- **Python 3.11+** — 使用 `python --version` 检查
-- **基于 Chromium 的浏览器** — Chrome、Brave、Edge、Vivaldi、Opera、Arc 或 Chromium
-- **macOS 或 Linux** — 桌面自动化（`computer`）目前仅支持 macOS
-
 ## 安装
 
-```bash
-pip install omniscout
-```
+**你只需手动完成这一步。** 完成后，AI agent 会继续设置 OmniScout。
 
-验证安装：
+访问 [omniscout.xyz](https://omniscout.xyz/)。
 
-```bash
-omniscout --version
-omniscout --help
-```
+![OmniScout 网站上的 Copy Prompt 按钮](/installation-guide/step-1.png)
 
-## 设置浏览器
+点击 **Copy Prompt**，或从列表中选择一个 AI agent，在对应工具中打开安装提示。
 
-OmniScout 通过两种方式驱动真实浏览器：
+![OmniScout 网站上的 AI agent 选项](/installation-guide/step-2.png)
 
-| 后端 | 说明 | 适用场景 |
-|---|---|---|
-| **Patchright**（默认） | OmniScout 使用持久 profile 启动自带 Chromium | 零配置、隔离的自动化 |
-| **Extension**（可选） | 驱动你已有的浏览器，使用真实登录态 | 需要已登录站点的场景 |
+- 将提示发送给你的 AI agent。
+- agent 会完成 OmniScout 的设置。过程中可能会询问你：
+  - 选择默认浏览器。
+  - 从已安装的浏览器中选择一个。
+  - 授予 OmniScout 所需的权限。
+- 设置完成后，页面会自动打开。
 
-检查已安装的浏览器并验证 Chromium 可用性：
+![OmniScout 浏览器设置页面](/installation-guide/step-3.png)
 
-```bash
-omniscout settings browsers
-omniscout install
-```
+在该页面点击 **Allow Remote Debugging**，启用浏览器功能。
 
-如需驱动已有浏览器，请将 OmniScout 指向该浏览器并加载扩展：
-
-```bash
-omniscout setup --browser dia
-```
-
-该命令会下载扩展并打开浏览器的扩展管理页。选择 `Load unpacked`，选中打印出的文件夹，并确认弹窗显示 `Daemon: connected`。后端差异见[工作原理](/docs/overview)。
-
-## 启动 daemon
-
-daemon 是常驻后台进程，让浏览器保持热启动，使每个操作都在亚秒级完成：
-
-```bash
-omniscout daemon start
-omniscout daemon status
-```
-
-只需执行一次 — 后续命令 CLI 会自动启动 daemon。端口、日志与生命周期见 [Daemon 与会话](/docs/automation/sessions)。
-
-## 预热模型
-
-首次搜索或问答会下载本地 embedding 模型（之后缓存）。提前预加载，避免在任务中途等待：
-
-```bash
-omniscout warmup
-```
-
-## 安装 Agent 技能（可选）
-
-如果将由 AI agent 驱动 OmniScout，请安装技能文件，让 Claude Code、Cursor、Codex 和 Gemini CLI 自动发现：
-
-```bash
-omniscout install --skill
-```
-
-完整 agent 配置见[与 AI agent 配合使用](/docs/agents)。
-
-## 更新与卸载
-
-```bash
-pip install --upgrade omniscout   # update
-pip uninstall omniscout           # remove the package
-```
-
-清除所有本地状态（profile、缓存、索引、记忆）：
-
-```bash
-rm -rf ~/Library/Application\ Support/omniscout/   # macOS
-rm -rf ~/.local/share/omniscout/                   # Linux
-```
-
-或用 `OMNISCOUT_DATA_DIR` 覆盖位置。见[配置](/docs/configuration)。
-
-## 下一步
-
-- [快速上手](/docs/quickstart) — 5 分钟完成首次搜索、提取与浏览器运行
-- [故障排查](/docs/troubleshooting) — 安装、浏览器与 daemon 问题的修复方法
+**现在可以通过 AI agent 使用 OmniScout 了。**

@@ -1,103 +1,30 @@
 ---
 title: Installation
-description: Install OmniScout, verify your browser, and get the daemon running.
+description: Set up OmniScout with your AI agent.
 icon: Download
 ---
 
-## Requirements
+## Installation
 
-- **Python 3.11+** — check with `python --version`
-- **A Chromium-based browser** — Chrome, Brave, Edge, Vivaldi, Opera, Arc, or Chromium
-- **macOS, Linux, or Windows** — desktop automation availability depends on your operating system and accessibility services
+**This is the only manual setup you need to do.** After these steps, your AI agent will handle the rest of the OmniScout setup.
 
-## Install
+Visit [omniscout.xyz](https://omniscout.xyz/).
 
-```bash
-pip install omniscout
-```
+![The OmniScout website with the Copy Prompt button](/installation-guide/step-1.png)
 
-Verify the install:
+Click **Copy Prompt**, or select one of the listed AI agents to open the installation prompt in that agent.
 
-```bash
-omniscout --version
-omniscout --help
-```
+![AI agent choices on the OmniScout website](/installation-guide/step-2.png)
 
-## Set up a browser
+- Send the prompt to your AI agent.
+- The agent will complete the OmniScout setup. It may ask you to:
+  - Select a default browser.
+  - Choose between multiple installed browsers.
+  - Grant the permissions OmniScout needs.
+- When setup is complete, a page will open automatically.
 
-OmniScout drives a real browser two ways:
+![The OmniScout browser setup page](/installation-guide/step-3.png)
 
-| Option | When to use it |
-|---|---|
-| **Default** | Zero setup, isolated automation |
-| **Extension** (opt-in) | Sites where you're already logged in |
+On that page, click **Allow Remote Debugging** to enable browser functionality.
 
-Check which browsers are installed and verify Chromium availability:
-
-```bash
-omniscout settings browsers
-omniscout install
-```
-
-To set your default browser and connect its extension, run setup:
-
-```bash
-omniscout setup --browser dia
-```
-
-Setup opens the browser's extensions page and remote-debugging page, and starts your operating system's Accessibility permission flow. On macOS, allow Accessibility for the app running OmniScout. On Windows and Linux, OmniScout opens Accessibility settings when the desktop provides them; these systems may not show an app-specific consent popup. Linux desktop control also needs an active accessibility service. In the browser, turn on **Allow remote debugging for this browser instance** and click **Allow** when asked.
-
-If the extension was not loaded automatically, choose **Load unpacked** on the extensions page and select the folder printed by setup. Confirm that the extension says it is connected. You choose whether to grant each permission. See [How it works](/docs/overview) for how the browser options differ.
-
-## Get ready
-
-OmniScout stays ready so every action runs fast:
-
-```bash
-omniscout daemon start
-omniscout daemon status
-```
-
-You only need to do this once — later commands get ready on their own. See [Sessions](/docs/automation/sessions) for lifecycle and logs.
-
-## Get ready for search
-
-Run once after install so the first search is fast:
-
-```bash
-omniscout warmup
-```
-
-## Install agent skills (optional)
-
-If an AI agent will drive OmniScout, install the skill files so Claude Code, Cursor, Codex, and Gemini CLI auto-discover it:
-
-```bash
-omniscout install --skill
-```
-
-To install the optional Probe Zero Mini model during setup, add
-`--probe-0-mini` to `omniscout install`. It downloads about 700 MB.
-
-See [Using with AI agents](/docs/agents) for the full agent setup.
-
-## Update and uninstall
-
-```bash
-pip install --upgrade omniscout   # update
-pip uninstall omniscout           # remove the package
-```
-
-To wipe all local state (profiles, caches, indexes, memory):
-
-```bash
-rm -rf ~/Library/Application\ Support/omniscout/   # macOS
-rm -rf ~/.local/share/omniscout/                   # Linux
-```
-
-Or override the location with `OMNISCOUT_DATA_DIR`. See [Configuration](/docs/configuration).
-
-## Next steps
-
-- [Quickstart](/docs/quickstart) — your first search, extract, and browser run in 5 minutes
-- [Troubleshooting](/docs/troubleshooting) — fixes for install and browser issues
+**OmniScout is ready to use with your AI agent.**

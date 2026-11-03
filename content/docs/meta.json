@@ -1,9 +1,9 @@
 {
   "pages": [
+    "installation",
     "index",
     "overview",
     "cli",
-    "installation",
     "quickstart",
     "search",
     "automation",

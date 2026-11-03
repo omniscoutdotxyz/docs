@@ -1,98 +1,30 @@
 ---
 title: 설치
-description: OmniScout를 설치하고 브라우저를 확인한 뒤 daemon을 실행하세요.
+description: AI 에이전트와 함께 OmniScout를 설정합니다.
 icon: Download
 ---
 
-## 요구 사항
-
-- **Python 3.11+** — `python --version`으로 확인하세요
-- **Chromium 기반 브라우저** — Chrome, Brave, Edge, Vivaldi, Opera, Arc 또는 Chromium
-- **macOS 또는 Linux** — 데스크톱 자동화(`computer`)는 현재 macOS만 지원합니다
-
 ## 설치
 
-```bash
-pip install omniscout
-```
+**직접 해야 하는 설정은 이 단계가 전부입니다.** 이후 OmniScout 설정은 AI 에이전트가 진행합니다.
 
-설치를 확인하세요:
+[omniscout.xyz](https://omniscout.xyz/)를 방문하세요.
 
-```bash
-omniscout --version
-omniscout --help
-```
+![OmniScout 웹사이트의 Copy Prompt 버튼](/installation-guide/step-1.png)
 
-## 브라우저 설정
+**Copy Prompt**를 클릭하거나 목록에서 AI 에이전트를 선택해 설치 프롬프트를 엽니다.
 
-OmniScout는 두 가지 방식으로 실제 브라우저를 구동합니다:
+![OmniScout 웹사이트의 AI 에이전트 선택 항목](/installation-guide/step-2.png)
 
-| 백엔드 | 설명 | 사용 시점 |
-|---|---|---|
-| **Patchright** (기본값) | OmniScout가 영속 프로필로 자체 Chromium을 실행합니다 | 설정 없이 격리된 자동화를 할 때 |
-| **Extension** (선택) | 이미 로그인된 기존 브라우저를 구동합니다 | 이미 로그인된 사이트를 다룰 때 |
+- 프롬프트를 AI 에이전트에 보냅니다.
+- 에이전트가 OmniScout 설정을 완료합니다. 다음 항목을 물어볼 수 있습니다.
+  - 기본 브라우저 선택
+  - 설치된 브라우저 중 하나 선택
+  - OmniScout에 필요한 권한 허용
+- 설정이 끝나면 페이지가 자동으로 열립니다.
 
-설치된 브라우저를 확인하고 Chromium 사용 가능 여부를 검증하세요:
+![OmniScout 브라우저 설정 페이지](/installation-guide/step-3.png)
 
-```bash
-omniscout settings browsers
-omniscout install
-```
+해당 페이지에서 **Allow Remote Debugging**을 클릭해 브라우저 기능을 활성화하세요.
 
-기존 브라우저를 직접 구동하려면 OmniScout가 해당 브라우저를 가리키도록 하고 extension을 로드하세요:
-
-```bash
-omniscout setup --browser dia
-```
-
-이 명령은 extension을 다운로드하고 브라우저의 extensions 페이지를 엽니다. `Load unpacked`를 선택하고 출력된 폴더를 고른 뒤 팝업에 `Daemon: connected`가 표시되는지 확인하세요. 백엔드 차이에 대해서는 [동작 원리](/docs/overview)를 참고하세요.
-
-## Daemon 시작
-
-daemon은 브라우저를 따뜻하게 유지하는 long-lived 백그라운드 프로세스로, 모든 동작을 1초 이내로 만듭니다:
-
-```bash
-omniscout daemon start
-omniscout daemon status
-```
-
-한 번만 실행하면 됩니다 — 이후 명령어에서는 CLI가 daemon을 자동으로 시작합니다. 포트, 로그, 생명주기는 [Daemon 및 세션](/docs/automation/sessions)을 참고하세요.
-
-## 모델 예열
-
-첫 검색이나 answer 호출 시 로컬 임베딩 모델을 다운로드합니다(그 이후에는 캐시됨). 작업 중간에 기다리지 않도록 미리 로드하세요:
-
-```bash
-omniscout warmup
-```
-
-## 에이전트 스킬 설치 (선택 사항)
-
-AI 에이전트가 OmniScout를 구동할 예정이라면 스킬 파일을 설치하여 Claude Code, Cursor, Codex, Gemini CLI가 자동으로 인식하도록 하세요:
-
-```bash
-omniscout install --skill
-```
-
-전체 에이전트 설정은 [AI 에이전트와 함께 사용하기](/docs/agents)를 참고하세요.
-
-## 업데이트 및 제거
-
-```bash
-pip install --upgrade omniscout   # update
-pip uninstall omniscout           # remove the package
-```
-
-모든 로컬 상태(프로필, 캐시, 인덱스, memory)를 삭제하려면:
-
-```bash
-rm -rf ~/Library/Application\ Support/omniscout/   # macOS
-rm -rf ~/.local/share/omniscout/                   # Linux
-```
-
-또는 `OMNISCOUT_DATA_DIR`로 위치를 재정의하세요. [설정](/docs/configuration)을 참고하세요.
-
-## 다음 단계
-
-- [빠른 시작](/docs/quickstart) — 5분 만에 첫 검색, 추출, 브라우저 실행
-- [문제 해결](/docs/troubleshooting) — 설치, 브라우저, daemon 문제 해결법
+**이제 AI 에이전트에서 OmniScout를 사용할 수 있습니다.**
