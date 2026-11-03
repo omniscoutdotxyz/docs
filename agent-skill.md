@@ -263,7 +263,7 @@ Top-level aliases that tie search, browser, and extract together:
 ```bash
 omniscout open <url-or-index> [--session NAME] [--profile NAME] [--new-tab]
 omniscout snapshot [--refs-only] [--session NAME]
-omniscout context    # workflow state: session, search set, snapshot generation
+omniscout context    # workflow state: session, search set, snapshot generation, marks
 omniscout reset      # clear workflow state (does not close browser sessions)
 omniscout workflow export [--session NAME] [--since SECONDS] [--from-context]
 omniscout workflow mark-deliverable <path-or-url> [--summary TEXT]
