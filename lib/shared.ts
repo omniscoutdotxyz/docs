@@ -1,4 +1,4 @@
-export const appName = 'OmniScout';
+export const appName = 'OmniScout Docs';
 export const docsRoute = '/docs';
 export const docsImageRoute = '/og/docs';
 export const docsContentRoute = '/llms.mdx/docs';
