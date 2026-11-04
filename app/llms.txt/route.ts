@@ -1,3 +1,5 @@
+import { source } from '@/lib/source';
+import { languageCodes, languageLabels } from '@/lib/i18n';
 import { SETUP_PROMPT } from '@/lib/setup-prompt';
 
 export const revalidate = false;
@@ -6,7 +8,6 @@ const SITE_URL = 'https://docs.omniscout.xyz';
 const DOCS_URL = 'https://docs.omniscout.xyz/en/docs/installation';
 const WEBSITE_URL = 'https://omniscout.xyz/';
 const VIDEO_URL = 'https://www.youtube.com/watch?v=tMrjALacGjQ';
-const GITHUB_URL = 'https://github.com/sriramramnath/omniscout';
 const EMAIL = 'sriramramnath2011@gmail.com';
 
 const steps = [
@@ -16,16 +17,65 @@ const steps = [
   'When setup finishes, a page opens automatically. Click **Allow Remote Debugging** there to turn on browser control.',
 ];
 
+type TreeNode = ReturnType<typeof source.getPageTree>['children'][number];
+
+function link(page: { url: string; title: string; description?: string }) {
+  const description = page.description?.trim();
+  return description
+    ? `- [${page.title}](${SITE_URL}${page.url}.md): ${description}`
+    : `- [${page.title}](${SITE_URL}${page.url}.md)`;
+}
+
+function renderNode(node: TreeNode, lang: string, depth = 0): string[] {
+  if (node.type === 'separator') return [];
+
+  if (node.type === 'page') {
+    const page = source.getNodePage(node, lang);
+    // The docs root only redirects to the installation page.
+    if (!page || page.url.endsWith('/docs')) return [];
+    const item = link({
+      url: page.url,
+      title: page.data.title ?? String(node.name ?? ''),
+      description: page.data.description,
+    });
+    return [depth > 0 ? `${'  '.repeat(depth)}${item}` : item];
+  }
+
+  const meta = source.getNodeMeta(node, lang);
+  const title = meta?.data.title ?? (typeof node.name === 'string' ? node.name : undefined);
+  const out: string[] = title ? [`${'  '.repeat(depth)}- ${title}`] : [];
+  if (node.index) out.push(...renderNode(node.index, lang, depth + 1));
+  for (const child of node.children) out.push(...renderNode(child, lang, depth + 1));
+  return out;
+}
+
+function pageList(lang: string) {
+  return source
+    .getPageTree(lang)
+    .children.flatMap((node) => renderNode(node, lang))
+    .join('\n');
+}
+
 function buildLlmsTxt() {
+  const otherLanguages = languageCodes
+    .filter((lang) => lang !== 'en')
+    .map(
+      (lang) =>
+        `- [${languageLabels[lang]}](${SITE_URL}/${lang}/docs/installation.md): The same documentation in ${languageLabels[lang]}.`,
+    )
+    .join('\n');
+
   return `# OmniScout
 
 > OmniScout is a local-first CLI that gives AI agents real-time web access: semantic search, browser automation, and computer control. Everything runs on your own machine.
 
 Installation is the only manual step. After it, your AI agent finishes the rest of the setup. OmniScout runs on macOS, Linux, and Windows, needs Python 3.11 or newer, and drives a Chromium-based browser you already have installed.
 
+Every documentation page has a markdown version: append \`.md\` to the page URL, or send \`Accept: text/markdown\`. Use the markdown versions when you need the content of a page.
+
 ## Installation
 
-- [Installation guide](${DOCS_URL}): Video walkthrough and step-by-step screenshots for setting up OmniScout with an AI agent.
+- [Installation guide](${DOCS_URL}.md): Video walkthrough and step-by-step screenshots for setting up OmniScout with an AI agent.
 - [Download OmniScout](${WEBSITE_URL}): Copy the setup prompt or open it directly in Claude Code, Cursor, Codex, or another agent.
 
 ### Before you start
@@ -56,16 +106,26 @@ The **Copy Prompt** button copies this prompt. Paste it into your agent to run t
 ${SETUP_PROMPT}
 \`\`\`\`
 
+## Documentation — English
+
+${pageList('en')}
+
+## Documentation — other languages
+
+${otherLanguages}
+
+## Full text
+
+- [llms-full.txt](${SITE_URL}/llms-full.txt): Every documentation page in one file, for clients that cannot follow links.
+
 ## Links
 
 - [Documentation](${SITE_URL}/en): Full OmniScout documentation.
 - [Website](${WEBSITE_URL}): Product overview and download page.
-- [GitHub](${GITHUB_URL}): Source code and release notes.
 
 ## Contact
 
 - Email: ${EMAIL}
-- Issues: [GitHub Issues](${GITHUB_URL}/issues)
 `;
 }
 
