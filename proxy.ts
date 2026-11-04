@@ -98,7 +98,18 @@ export default async function proxy(request: NextRequest, event: NextFetchEvent)
     }
   }
 
-  return NextResponse.next();
+  // Point clients at the markdown twin of this page and at /llms.txt, so an
+  // agent can discover both without guessing URLs.
+  const response = res ?? NextResponse.next();
+  if (/^\/[^/]+\/docs(\/|$)/.test(pathname)) {
+    response.headers.set(
+      'Link',
+      `<${pathname}.md>; rel="alternate"; type="text/markdown", </llms.txt>; rel="describedby"`,
+    );
+  } else {
+    response.headers.set('Link', '</llms.txt>; rel="describedby"');
+  }
+  return response;
 }
 
 export const config = {
