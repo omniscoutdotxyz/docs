@@ -8,7 +8,7 @@ const SITE_URL = 'https://docs.omniscout.xyz';
 const DOCS_URL = 'https://docs.omniscout.xyz/en/docs/installation';
 const WEBSITE_URL = 'https://omniscout.xyz/';
 const VIDEO_URL = 'https://www.youtube.com/watch?v=tMrjALacGjQ';
-const EMAIL = 'sriramramnath2011@gmail.com';
+const EMAIL = 'contact@omniscout.xyz';
 
 const steps = [
   `Visit [omniscout.xyz](${WEBSITE_URL}) and click **Copy Prompt**, or select your AI agent to open the prompt in it.`,
