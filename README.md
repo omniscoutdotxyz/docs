@@ -104,7 +104,7 @@ Run both before pushing. The build also renders the search index and sitemap.
 
 ## Deploy
 
-Hosted on Vercel and deployed from `master`. `vercel.json` pins the Next.js
+Hosted on Vercel and deployed from `main`. `vercel.json` pins the Next.js
 preset, so no extra configuration is needed.
 
 ## For agents and scripts
