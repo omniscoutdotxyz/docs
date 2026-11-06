@@ -40,3 +40,5 @@ logs
 
 # Legacy Astro
 .astro
+.vercel
+.env*.local
