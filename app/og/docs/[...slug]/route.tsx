@@ -87,7 +87,7 @@ function OgCard({ title, logo, background }: { title: string; logo: string; back
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
         <img src={logo} alt="" width={62} height={66} style={{ objectFit: 'contain' }} />
-        <span style={{ fontSize: '58px', fontWeight: 800, letterSpacing: '-0.04em' }}>
+        <span style={{ fontSize: '58px', fontWeight: 400, letterSpacing: '-0.02em' }}>
           OmniScout Docs
         </span>
       </div>
@@ -97,9 +97,9 @@ function OgCard({ title, logo, background }: { title: string; logo: string; back
           display: 'flex',
           marginTop: 'auto',
           fontSize: getTitleSize(title),
-          fontWeight: 800,
-          lineHeight: 1.02,
-          letterSpacing: '-0.04em',
+          fontWeight: 400,
+          lineHeight: 1.04,
+          letterSpacing: '-0.03em',
           paddingBottom: '8px',
           lineClamp: 3,
         }}
@@ -118,7 +118,7 @@ export async function GET(_req: Request, { params }: RouteContext<'/og/docs/[...
   const [logo, background, font] = await Promise.all([
     getLogo(),
     getBackground(),
-    readFile(join(process.cwd(), 'app/og/fonts/inter-800.woff')),
+    readFile(join(process.cwd(), 'app/og/fonts/inter-400.woff')),
   ]);
 
   return new ImageResponse(
@@ -126,7 +126,7 @@ export async function GET(_req: Request, { params }: RouteContext<'/og/docs/[...
     {
       width: 1200,
       height: 630,
-      fonts: [{ name: 'Inter', data: font, weight: 800, style: 'normal' }],
+      fonts: [{ name: 'Inter', data: font, weight: 400, style: 'normal' }],
     },
   );
 }
