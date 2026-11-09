@@ -6,31 +6,64 @@ import { join } from 'node:path';
 
 export const revalidate = false;
 
-const accent = '#5cc2bc';
-const accentDeep = '#0f766e';
-const background = '#04100e';
+const ink = '#0a0f12';
 
-// The logo file is a padded 1024x1024 canvas, so crop the viewBox to the mark's
-// bounds to keep it from rendering tiny inside the badge.
+// The logo is a padded 1024x1024 canvas with a white mark, so crop the viewBox to
+// the mark's bounds and repaint it dark for the light background.
 const markViewBox = '184 124 710 778';
 
 async function getLogo() {
   const svg = await readFile(join(process.cwd(), 'public/omniscout.svg'), 'utf8');
 
-  return `data:image/svg+xml;base64,${Buffer.from(
-    svg.replace('viewBox="0 0 1024 1024"', `viewBox="${markViewBox}"`),
-  ).toString('base64')}`;
+  const mark = svg
+    .replace('viewBox="0 0 1024 1024"', `viewBox="${markViewBox}"`)
+    .replaceAll('rgb(255,255,255)', ink);
+
+  return `data:image/svg+xml;base64,${Buffer.from(mark).toString('base64')}`;
 }
 
-function OgCard({
-  title,
-  description,
-  logo,
-}: {
-  title: string;
-  description?: string;
-  logo: string;
-}) {
+async function getBackground() {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="1" y2="0.35">
+      <stop offset="0" stop-color="#eafdfd"/>
+      <stop offset="0.3" stop-color="#d3fafb"/>
+      <stop offset="0.62" stop-color="#b0f0fd"/>
+      <stop offset="0.85" stop-color="#6cdffb"/>
+      <stop offset="1" stop-color="#34ccfa"/>
+    </linearGradient>
+    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="26"/>
+    </filter>
+    <filter id="haze" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="70"/>
+    </filter>
+  </defs>
+  <rect width="1200" height="630" fill="url(#sky)"/>
+  <g filter="url(#soft)">
+    <ellipse cx="620" cy="60" rx="620" ry="46" fill="#ffffff" opacity="0.5" transform="rotate(-5 620 60)"/>
+    <ellipse cx="1180" cy="230" rx="560" ry="40" fill="#0fbdfa" opacity="0.35" transform="rotate(-11 1180 230)"/>
+    <ellipse cx="1000" cy="170" rx="520" ry="24" fill="#ffffff" opacity="0.55" transform="rotate(-9 1000 170)"/>
+    <ellipse cx="940" cy="300" rx="620" ry="22" fill="#ffffff" opacity="0.45" transform="rotate(-10 940 300)"/>
+    <ellipse cx="1180" cy="410" rx="680" ry="30" fill="#ffffff" opacity="0.9" transform="rotate(-12 1180 410)"/>
+    <ellipse cx="1050" cy="520" rx="620" ry="42" fill="#22cbfb" opacity="0.45" transform="rotate(-12 1050 520)"/>
+  </g>
+  <g filter="url(#haze)">
+    <ellipse cx="200" cy="520" rx="560" ry="240" fill="#ffffff" opacity="0.75"/>
+    <ellipse cx="120" cy="140" rx="360" ry="180" fill="#ffffff" opacity="0.5"/>
+  </g>
+</svg>`;
+
+  return `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
+}
+
+function getTitleSize(title: string) {
+  if (title.length > 34) return 68;
+  if (title.length > 22) return 82;
+  return 104;
+}
+
+function OgCard({ title, logo, background }: { title: string; logo: string; background: string }) {
   return (
     <div
       style={{
@@ -39,111 +72,40 @@ function OgCard({
         display: 'flex',
         flexDirection: 'column',
         position: 'relative',
-        padding: '64px 72px 72px',
-        backgroundColor: background,
-        backgroundImage: `radial-gradient(circle at 88% -15%, rgba(92,194,188,0.28), rgba(92,194,188,0) 55%), radial-gradient(circle at -5% 115%, rgba(15,118,110,0.45), rgba(15,118,110,0) 55%)`,
-        color: '#f5f7f7',
+        padding: '40px 56px 62px',
+        backgroundColor: '#d9f7fc',
+        color: ink,
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: '18px' }}>
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '56px',
-            height: '56px',
-            borderRadius: '16px',
-            backgroundColor: 'rgba(92,194,188,0.12)',
-            border: '1px solid rgba(92,194,188,0.35)',
-          }}
-        >
-          <img src={logo} alt="" width={32} height={36} style={{ objectFit: 'contain' }} />
-        </div>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px' }}>
-          <span style={{ fontSize: '30px', fontWeight: 700, letterSpacing: '-0.01em' }}>
-            OmniScout
-          </span>
-          <span style={{ fontSize: '26px', color: 'rgba(245,247,247,0.5)' }}>Docs</span>
-        </div>
-        <span
-          style={{
-            display: 'flex',
-            marginLeft: 'auto',
-            fontSize: '22px',
-            color: 'rgba(92,194,188,0.8)',
-          }}
-        >
-          docs.omniscout.xyz
+      <img
+        src={background}
+        alt=""
+        width={1200}
+        height={630}
+        style={{ position: 'absolute', top: 0, left: 0 }}
+      />
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <img src={logo} alt="" width={62} height={66} style={{ objectFit: 'contain' }} />
+        <span style={{ fontSize: '58px', fontWeight: 800, letterSpacing: '-0.04em' }}>
+          OmniScout Docs
         </span>
       </div>
 
       <div
         style={{
           display: 'flex',
-          flexDirection: 'column',
           marginTop: 'auto',
-          marginBottom: 'auto',
-          paddingTop: '48px',
+          fontSize: getTitleSize(title),
+          fontWeight: 800,
+          lineHeight: 1.02,
+          letterSpacing: '-0.04em',
+          paddingBottom: '8px',
+          lineClamp: 3,
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div
-            style={{ width: '28px', height: '3px', borderRadius: '2px', backgroundColor: accent }}
-          />
-          <span
-            style={{
-              fontSize: '20px',
-              fontWeight: 600,
-              letterSpacing: '0.24em',
-              color: accent,
-            }}
-          >
-            DOCUMENTATION
-          </span>
-        </div>
-
-        <div
-          style={{
-            display: 'flex',
-            fontSize: title.length > 40 ? '68px' : '78px',
-            fontWeight: 700,
-            lineHeight: 1.08,
-            letterSpacing: '-0.03em',
-            marginTop: '26px',
-            lineClamp: 2,
-          }}
-        >
-          {title}
-        </div>
-
-        {description ? (
-          <div
-            style={{
-              display: 'flex',
-              fontSize: '30px',
-              lineHeight: 1.4,
-              color: 'rgba(226,236,235,0.62)',
-              marginTop: '22px',
-              lineClamp: 2,
-            }}
-          >
-            {description}
-          </div>
-        ) : null}
+        {title}
       </div>
-
-      <div
-        style={{
-          position: 'absolute',
-          left: 0,
-          right: 0,
-          bottom: 0,
-          height: '8px',
-          display: 'flex',
-          backgroundImage: `linear-gradient(90deg, ${accentDeep}, ${accent} 45%, rgba(92,194,188,0.15))`,
-        }}
-      />
     </div>
   );
 }
@@ -153,15 +115,18 @@ export async function GET(_req: Request, { params }: RouteContext<'/og/docs/[...
   const page = source.getPage(slug.slice(0, -1));
   if (!page) notFound();
 
+  const [logo, background, font] = await Promise.all([
+    getLogo(),
+    getBackground(),
+    readFile(join(process.cwd(), 'app/og/fonts/inter-800.woff')),
+  ]);
+
   return new ImageResponse(
-    <OgCard
-      title={page.data.title}
-      description={page.data.description}
-      logo={await getLogo()}
-    />,
+    <OgCard title={page.data.title} logo={logo} background={background} />,
     {
       width: 1200,
       height: 630,
+      fonts: [{ name: 'Inter', data: font, weight: 800, style: 'normal' }],
     },
   );
 }
